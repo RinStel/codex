@@ -38,6 +38,7 @@ pub enum SlashCommand {
     App,
     Init,
     Compact,
+    Continue,
     Recap,
     Plan,
     Goal,
@@ -95,6 +96,7 @@ impl SlashCommand {
             SlashCommand::Review => "review my current changes and find issues",
             SlashCommand::Rename => "rename the current thread",
             SlashCommand::Resume => "resume a saved chat",
+            SlashCommand::Continue => "continue the interrupted turn without sending a message",
             SlashCommand::Archive => "archive this session and exit",
             SlashCommand::Delete => "permanently delete this session and exit",
             SlashCommand::Clear => "clear the terminal and start a new chat",
@@ -207,6 +209,7 @@ impl SlashCommand {
     pub fn available_during_task(self) -> bool {
         match self {
             SlashCommand::New
+            | SlashCommand::Continue
             | SlashCommand::Archive
             | SlashCommand::Delete
             | SlashCommand::Fork

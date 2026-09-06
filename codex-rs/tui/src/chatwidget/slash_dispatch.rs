@@ -242,6 +242,13 @@ impl ChatWidget {
             SlashCommand::Resume => {
                 self.app_event_tx.send(AppEvent::OpenResumePicker);
             }
+            SlashCommand::Continue => {
+                if let Some(thread_id) = self.thread_id {
+                    self.app_event_tx.send(AppEvent::ContinueTurn { thread_id });
+                } else {
+                    self.add_error_message("There is no unfinished turn to continue.".to_string());
+                }
+            }
             SlashCommand::Fork => {
                 self.app_event_tx
                     .send(AppEvent::ForkCurrentSession { name: None });
@@ -1179,6 +1186,7 @@ impl ChatWidget {
             | SlashCommand::Delete
             | SlashCommand::Clear
             | SlashCommand::Resume
+            | SlashCommand::Continue
             | SlashCommand::Fork
             | SlashCommand::Init
             | SlashCommand::Compact

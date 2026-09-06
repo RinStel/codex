@@ -243,6 +243,8 @@ mod compaction_tests;
 mod composer_submission;
 #[path = "tests/config_errors_tests.rs"]
 mod config_errors;
+#[path = "tests/continue_turn_tests.rs"]
+mod continue_turn_tests;
 mod exec_flow;
 mod goal_menu;
 mod goal_validation;

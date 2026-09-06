@@ -241,6 +241,9 @@ impl App {
                 )
                 .await;
             }
+            AppEvent::ContinueTurn { thread_id } => {
+                self.continue_turn(app_server, thread_id).await;
+            }
             AppEvent::OpenResumePicker => {
                 return Box::pin(self.open_resume_picker(tui, app_server)).await;
             }

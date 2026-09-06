@@ -438,6 +438,9 @@ pub(crate) enum AppEvent {
 
     /// Open the resume picker inside the running TUI session.
     OpenResumePicker,
+    ContinueTurn {
+        thread_id: ThreadId,
+    },
 
     /// Open the Claude Code migration picker inside the running TUI session.
     OpenExternalAgentConfigMigration,
