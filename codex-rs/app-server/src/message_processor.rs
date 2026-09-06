@@ -511,6 +511,7 @@ impl MessageProcessor {
         let turn_processor = TurnRequestProcessor::new(
             auth_manager,
             Arc::clone(&thread_manager),
+            Arc::clone(&thread_store),
             outgoing.clone(),
             analytics_events_client.clone(),
             arg0_paths.clone(),
@@ -1458,6 +1459,9 @@ impl MessageProcessor {
                 self.catalog_processor
                     .mock_experimental_method(params)
                     .await
+            }
+            ClientRequest::TurnContinue { params, .. } => {
+                self.turn_processor.turn_continue(&request_id, params).await
             }
             ClientRequest::TurnStart { params, .. } => {
                 self.turn_processor

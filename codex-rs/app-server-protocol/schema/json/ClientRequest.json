@@ -5300,6 +5300,18 @@
       ],
       "type": "object"
     },
+    "TurnContinueParams": {
+      "description": "Continue the latest unfinished turn without adding user input.",
+      "properties": {
+        "threadId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "threadId"
+      ],
+      "type": "object"
+    },
     "TurnEnvironmentParams": {
       "properties": {
         "cwd": {
@@ -7206,6 +7218,30 @@
         "params"
       ],
       "title": "Plugin/uninstallRequest",
+      "type": "object"
+    },
+    {
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/RequestId"
+        },
+        "method": {
+          "enum": [
+            "turn/continue"
+          ],
+          "title": "Turn/continueRequestMethod",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/definitions/TurnContinueParams"
+        }
+      },
+      "required": [
+        "id",
+        "method",
+        "params"
+      ],
+      "title": "Turn/continueRequest",
       "type": "object"
     },
     {

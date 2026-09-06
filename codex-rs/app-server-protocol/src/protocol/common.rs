@@ -979,6 +979,11 @@ client_request_definitions! {
         serialization: global("config"),
         response: v2::PluginUninstallResponse,
     },
+    TurnContinue => "turn/continue" {
+        params: v2::TurnContinueParams,
+        serialization: thread_id(params.thread_id),
+        response: v2::TurnContinueResponse,
+    },
     TurnStart => "turn/start" {
         params: v2::TurnStartParams,
         inspect_params: true,

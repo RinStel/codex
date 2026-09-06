@@ -1372,6 +1372,26 @@ await pc.setRemoteDescription({
 });
 ```
 
+### Example: Continue an unfinished turn
+
+`turn/continue` resumes the latest unfinished turn in an idle, loaded thread. Use
+`thread/resume` first when reopening a saved thread. Recovery preserves the turn ID
+and existing conversation history without adding a user message. It emits the usual
+`turn/started`, item, and `turn/completed` notifications. Failed or interrupted turns,
+including an unfinished turn saved before a process exit, are eligible. A running
+turn, an empty thread, or a normally completed last turn is rejected.
+
+```json
+{ "method": "turn/continue", "id": 15, "params": { "threadId": "thr_123" } }
+{ "id": 15, "result": { "turnId": "turn_456" } }
+```
+
+Recovery uses saved context; it does not restore unrecorded streamed tokens or
+guarantee exactly-once execution of external tool operations.
+It uses the current thread settings. Per-turn output schema and service-tier
+overrides from `turn/start` are not restored. Turns stopped for a misalignment
+precaution cannot be continued through this method.
+
 ### Example: Interrupt an active turn
 
 You can cancel a running Turn with `turn/interrupt`.

@@ -37,6 +37,21 @@ pub enum TurnStatus {
 }
 
 // Turn APIs
+/// Continue the latest unfinished turn without adding user input.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, JsonSchema, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export_to = "v2/")]
+pub struct TurnContinueParams {
+    pub thread_id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, JsonSchema, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export_to = "v2/")]
+pub struct TurnContinueResponse {
+    pub turn_id: String,
+}
+
 /// Experimental settings changes for one running turn, not future turns.
 /// Unsupported fields are rejected rather than silently ignored.
 /// Any live task kind may accept publication. Child sessions and consumers of

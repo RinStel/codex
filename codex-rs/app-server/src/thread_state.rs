@@ -107,6 +107,7 @@ pub(crate) struct ThreadState {
     last_thread_settings: Option<ThreadSettings>,
     listener_command_tx: Option<mpsc::UnboundedSender<ThreadListenerCommand>>,
     current_turn_history: ThreadHistoryBuilder,
+    pub(crate) pending_recovery_history: Option<ThreadHistoryBuilder>,
     listener_thread: Option<Weak<CodexThread>>,
     watch_registration: WatchRegistration,
 }
@@ -145,6 +146,7 @@ impl ThreadState {
         self.shutdown_drain_waiter = None;
         self.listener_command_tx = None;
         self.current_turn_history.reset();
+        self.pending_recovery_history = None;
         self.listener_thread = None;
         self.watch_registration = WatchRegistration::default();
     }
@@ -175,6 +177,11 @@ impl ThreadState {
 
     pub(crate) fn track_current_turn_event(&mut self, event_turn_id: &str, event: &EventMsg) {
         if let EventMsg::TurnStarted(payload) = event {
+            if let Some(history) = self.pending_recovery_history.take()
+                && history.active_turn_id() == Some(payload.turn_id.as_str())
+            {
+                self.current_turn_history = history;
+            }
             self.turn_summary.started_at = payload.started_at;
         }
         if let EventMsg::ItemCompleted(payload) = event

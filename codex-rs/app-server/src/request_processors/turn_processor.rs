@@ -17,6 +17,8 @@ use codex_skills::system_cache_root_dir;
 use crate::image_url::REMOTE_IMAGE_URL_ERROR;
 use crate::image_url::is_remote_image_url;
 
+mod continue_turn;
+
 pub(super) fn validate_user_input_image_urls(
     input: &[V2UserInput],
 ) -> Result<(), JSONRPCErrorError> {
@@ -77,6 +79,7 @@ pub(crate) struct TurnRequestProcessor {
     agent_runner: AgentRunner,
     auth_manager: Arc<AuthManager>,
     thread_manager: Arc<ThreadManager>,
+    thread_store: Arc<dyn ThreadStore>,
     outgoing: Arc<OutgoingMessageSender>,
     analytics_events_client: AnalyticsEventsClient,
     arg0_paths: Arg0DispatchPaths,
@@ -133,6 +136,7 @@ impl TurnRequestProcessor {
     pub(crate) fn new(
         auth_manager: Arc<AuthManager>,
         thread_manager: Arc<ThreadManager>,
+        thread_store: Arc<dyn ThreadStore>,
         outgoing: Arc<OutgoingMessageSender>,
         analytics_events_client: AnalyticsEventsClient,
         arg0_paths: Arg0DispatchPaths,
@@ -150,6 +154,7 @@ impl TurnRequestProcessor {
             agent_runner,
             auth_manager,
             thread_manager,
+            thread_store,
             outgoing,
             analytics_events_client,
             arg0_paths,
