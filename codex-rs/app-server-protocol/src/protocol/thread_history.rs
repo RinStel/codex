@@ -66,6 +66,10 @@ use tracing::warn;
 use uuid::Uuid;
 
 #[cfg(test)]
+#[path = "thread_history_recovery_tests.rs"]
+mod recovery_tests;
+
+#[cfg(test)]
 use crate::protocol::v2::CommandAction;
 #[cfg(test)]
 use crate::protocol::v2::FileUpdateChange;
@@ -253,6 +257,32 @@ impl ThreadHistoryBuilder {
 
     pub fn reset(&mut self) {
         *self = Self::new();
+    }
+
+    /// Restore a fully populated saved turn for live recovery, preserving item IDs.
+    pub fn from_turn(turn: Turn) -> Self {
+        let mut builder = Self::new();
+        builder.next_item_index = turn
+            .items
+            .iter()
+            .filter_map(|item| item.id().strip_prefix("item-")?.parse::<i64>().ok())
+            .max()
+            .unwrap_or_default()
+            .saturating_add(1);
+        builder.current_turn = Some(PendingTurn {
+            id: turn.id,
+            items: turn.items,
+            item_index: TurnItemIndex::default(),
+            error: turn.error,
+            status: turn.status,
+            started_at: turn.started_at,
+            completed_at: turn.completed_at,
+            duration_ms: turn.duration_ms,
+            opened_explicitly: true,
+            saw_compaction: false,
+            rollout_start_index: 0,
+        });
+        builder
     }
 
     pub fn finish(mut self) -> Vec<Turn> {
@@ -1240,11 +1270,18 @@ impl ThreadHistoryBuilder {
 
     fn handle_turn_started(&mut self, payload: &TurnStartedEvent) {
         self.finish_current_turn();
-        let turn = self
-            .new_turn(Some(payload.turn_id.clone()))
+        // Recovery restarts the latest turn with its original ID. Keep its items
+        // and indexes so persisted history and live projections agree.
+        let mut turn = self
+            .turns
+            .pop_if(|turn| turn.id == payload.turn_id)
+            .unwrap_or_else(|| self.new_turn(Some(payload.turn_id.clone())))
             .with_status(TurnStatus::InProgress)
             .with_started_at(payload.started_at)
             .opened_explicitly();
+        turn.error = None;
+        turn.completed_at = None;
+        turn.duration_ms = None;
         self.record_changed_pending_turn(&turn);
         self.current_turn = Some(turn);
     }

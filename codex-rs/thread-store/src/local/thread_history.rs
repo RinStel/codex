@@ -310,7 +310,8 @@ async fn apply_change_set(
         };
         // The same turn can appear again as it moves from started to completed. Update its latest
         // status, error, and timestamps, but keep the rollout ordinal from the first record that
-        // created it.
+        // created it. A later recovery start may reopen an interrupted or failed turn;
+        // late terminal updates must still leave closed turns alone.
         sqlx::query(
             r#"
 INSERT INTO thread_turns (
@@ -334,8 +335,10 @@ ON CONFLICT(thread_id, turn_id) DO UPDATE SET
     started_at = excluded.started_at,
     completed_at = excluded.completed_at,
     duration_ms = excluded.duration_ms
-WHERE thread_turns.rollout_end_ordinal IS NULL
-  AND thread_turns.status = 'inProgress'
+WHERE (thread_turns.rollout_end_ordinal IS NULL AND thread_turns.status = 'inProgress')
+   OR (excluded.status = 'inProgress'
+       AND thread_turns.status IN ('interrupted', 'failed')
+       AND excluded.rollout_ordinal > thread_turns.rollout_end_ordinal)
             "#,
         )
         .bind(thread_id)
